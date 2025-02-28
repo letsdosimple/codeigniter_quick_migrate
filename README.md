@@ -25,6 +25,7 @@ Following operation can be done
 * Delete existing table
 
 # Rules to know before use
+* Always start with latest schema
 * Cannot delete primary key
 * All the unique key should start with unique_
 * All the foreign key should start with fk_

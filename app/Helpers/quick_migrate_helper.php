@@ -53,30 +53,45 @@ function quickMigrate($tableName, $expectedSchema)
             return !in_array($key, ['primary_key', 'unique_keys', 'foreign_keys']);
         });
         $existingColumnNames = array_keys($existingColumns);
+        
+        // echo "<pre>";
+        // print_r($expectedSchema);
+        // print_r($existingColumns);
+        // print_r($expectedColumnNames);
+        // print_r($existingColumnNames);
+       
 
         // Step 1: Rename Columns
         if (count($existingColumnNames) === count($expectedColumnNames)) {
-            foreach ($existingColumnNames as $existingName) {
+            foreach ($existingColumnNames as $existingNameKey => $existingName) {
                 if (!isset($expectedSchema[$existingName])) {
-                    foreach ($expectedSchema as $newName => $attributes) {
-                        if (
-                            !isset($existingColumns[$newName]) &&
-                            $existingColumns[$existingName]['type'] === strtoupper($attributes['type']) &&
-                            ($existingColumns[$existingName]['constraint'] ?? null) === ($attributes['constraint'] ?? null)
-                        ) {
 
-                            echo "Renaming column: $existingName → $newName\n";
-                            try {
-                                $db->query("ALTER TABLE `$tableName` CHANGE `$existingName` `$newName` {$attributes['type']}({$attributes['constraint']})");
-                                // Update the reference
-                                $existingColumns[$newName] = $existingColumns[$existingName];
-                                unset($existingColumns[$existingName]);
-                            } catch (\Exception $e) {
-                                echo "Error renaming column: " . $e->getMessage() . "\n";
-                            }
-                        }
+                    $db->query("ALTER TABLE `$tableName` CHANGE `$existingName` `$expectedColumnNames[$existingNameKey]` {$expectedSchema[$expectedColumnNames[$existingNameKey]]['type']}({$expectedSchema[$expectedColumnNames[$existingNameKey]]['constraint']})");
+
+                    $fields = [
+                        $expectedColumnNames[$existingNameKey] => $expectedSchema[$expectedColumnNames[$existingNameKey]]
+                    ];
+                    $forge->modifyColumn($tableName, $fields);
+
+
+                }else{
+                    if(
+                        $existingColumns[$existingName]['type'] !== $expectedSchema[$existingName]['type'] 
+                        || (
+                            isset($existingColumns[$existingName]['constraint'])
+                            && isset($expectedSchema[$existingName]['constraint'])
+                            &&
+                            $existingColumns[$existingName]['constraint'] !== $expectedSchema[$existingName]['constraint']
+                        ) 
+                    ){
+                        $fields = [
+                            $existingName => $expectedSchema[$existingName]
+                        ];
+                        $forge->modifyColumn($tableName, $fields);
                     }
                 }
+
+
             }
         }
 

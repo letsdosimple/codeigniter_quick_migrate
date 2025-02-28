@@ -7,13 +7,13 @@ class QuickMigrate extends BaseController
     public function index(): string
     {
         /** RULES
-        * cannot drop primary key
-        * all the unique key start with unique_
-        * all the foreign key start with fk_
-        * only one operation can be done at a time per table (create column, update column, delete column, add foreign key, add unique key, delete foreign key, delete unique key, change column type, change column name, change column order)
-        * if alteration needed in fk_ then remove and add again
-        * if you need to add new column then add at the end of the schema and then reorder the columns
-        */ 
+         * cannot drop primary key
+         * all the unique key start with unique_
+         * all the foreign key start with fk_
+         * only one operation can be done at a time per table (create column, update column, delete column, add foreign key, add unique key, delete foreign key, delete unique key, change column type, change column name, change column order)
+         * if alteration needed in fk_ then remove and add again
+         * if you need to add new column then add at the end of the schema and then reorder the columns
+         */
 
         $this->deleteUnwantedTables();
 
@@ -43,38 +43,15 @@ class QuickMigrate extends BaseController
 
     private function manageUsersTable()
     {
-        helper(['quickMigrate']);
+        helper(['quick_migrate']);
 
-        // Adding test4, test5 column
         $expectedSchema = [
             'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
             'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
             'email' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test33' => ['type' => 'VARCHAR', 'constraint' => 255],
             'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'created_at' => ['type' => 'DATETIME', 'null' => true],
-            'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
-
-            // Primary Key
-            'primary_key' => 'id',
-
-            //Unique keys
-            'unique_keys' => [
-                'unique_email' => ['email'],
-            ],
-        ];
-
-        quickMigrate('users', $expectedSchema);
-
-        //reorderging columns
-        $expectedSchema = [
-            'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
-            'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'email' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test44' => ['type' => 'VARCHAR', 'constraint' => 101],
             'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
             'created_at' => ['type' => 'DATETIME', 'null' => true],
 
@@ -83,16 +60,17 @@ class QuickMigrate extends BaseController
 
             //Unique keys
             'unique_keys' => [
-                'unique_email' => ['email'],
+                'unique_test4' => ['test4'],
             ],
         ];
 
         quickMigrate('users', $expectedSchema);
+        
     }
 
     private function manageUserOtpTable()
     {
-        helper(['quickMigrate']);
+        helper(['quick_migrate']);
 
         $expectedSchema = [
             'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
