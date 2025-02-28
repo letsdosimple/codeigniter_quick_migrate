@@ -203,3 +203,11 @@ private function manageUsersTable()
     quickMigrate('users', $expectedSchema);
 }
 ```
+
+## TO RUN
+Update DB name and its credentials in `.env` file. In terminal run the following commands
+`composer update`
+`php spark serve`
+
+Check the following link in Browser [port depends on your system]
+`http://localhost:8080/quick-migrate`
