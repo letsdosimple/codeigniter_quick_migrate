@@ -46,57 +46,159 @@ Copy and add the following
 
 ## Adding new column in table
 - Operations
-	- Add column
+    - Place the latest schema and Add column
 	- Reorder column [if needed]
+    
 example:
-
 ``` PHP
-    private function manageUsersTable()
-    {
-        helper(['quickMigrate']);
+private function manageUsersTable()
+{
+    helper(['quickMigrate']);
 
-        // Adding test4, test5 column
-        $expectedSchema = [
-            'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
-            'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'email' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'created_at' => ['type' => 'DATETIME', 'null' => true],
-            'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
+    // Adding test4, test5 column
+    $expectedSchema = [
+        'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+        'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'email' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'created_at' => ['type' => 'DATETIME', 'null' => true],
+        'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
 
-            // Primary Key
-            'primary_key' => 'id',
+        // Primary Key
+        'primary_key' => 'id',
 
-            //Unique keys
-            'unique_keys' => [
-                'unique_email' => ['email'],
-            ],
-        ];
+        //Unique keys
+        'unique_keys' => [
+            'unique_email' => ['email'],
+        ],
+    ];
 
-        quickMigrate('users', $expectedSchema);
+    quickMigrate('users', $expectedSchema);
 
-        //reorderging columns
-        $expectedSchema = [
-            'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
-            'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'email' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
-            'created_at' => ['type' => 'DATETIME', 'null' => true],
+    //reorderging columns
+    $expectedSchema = [
+        'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+        'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'email' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'created_at' => ['type' => 'DATETIME', 'null' => true],
 
-            // Primary Key
-            'primary_key' => 'id',
+        // Primary Key
+        'primary_key' => 'id',
 
-            //Unique keys
-            'unique_keys' => [
-                'unique_email' => ['email'],
-            ],
-        ];
+        //Unique keys
+        'unique_keys' => [
+            'unique_email' => ['email'],
+        ],
+    ];
 
-        quickMigrate('users', $expectedSchema);
-    }
+    quickMigrate('users', $expectedSchema);
+}
+```
+
+## Adding new unique key and delete column and remove unique key and alter column name
+- Operations
+	- Removed the old schema and Place the latest schema and Add unique key for test4
+    - Delete the test5 column
+    - Remove the PK from email
+    - change test2 column name to test33
+    
+example:
+``` PHP
+private function manageUsersTable()
+{
+    helper(['quickMigrate']);
+
+    //Add unique key for test 4
+    $expectedSchema = [
+        'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+        'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'email' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'created_at' => ['type' => 'DATETIME', 'null' => true],
+
+        // Primary Key
+        'primary_key' => 'id',
+
+        //Unique keys
+        'unique_keys' => [
+            'unique_email' => ['email'],
+            'unique_test4' => ['test4'],
+        ],
+    ];
+
+    quickMigrate('users', $expectedSchema);
+
+    //Delete the test5 column
+    $expectedSchema = [
+        'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+        'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'email' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'created_at' => ['type' => 'DATETIME', 'null' => true],
+
+        // Primary Key
+        'primary_key' => 'id',
+
+        //Unique keys
+        'unique_keys' => [
+            'unique_email' => ['email'],
+            'unique_test4' => ['test4'],
+        ],
+    ];
+
+    quickMigrate('users', $expectedSchema);
+
+    //Remove unique key from email
+    $expectedSchema = [
+        'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+        'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'email' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test2' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'created_at' => ['type' => 'DATETIME', 'null' => true],
+
+        // Primary Key
+        'primary_key' => 'id',
+
+        //Unique keys
+        'unique_keys' => [
+            'unique_test4' => ['test4'],
+        ],
+    ];
+
+    quickMigrate('users', $expectedSchema);
+
+    //change column name from test2 to test33
+    $expectedSchema = [
+        'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+        'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'email' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test33' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'test4' => ['type' => 'VARCHAR', 'constraint' => 255],
+        'created_at' => ['type' => 'DATETIME', 'null' => true],
+
+        // Primary Key
+        'primary_key' => 'id',
+
+        //Unique keys
+        'unique_keys' => [
+            'unique_test4' => ['test4'],
+        ],
+    ];
+
+    quickMigrate('users', $expectedSchema);
+}
 ```
