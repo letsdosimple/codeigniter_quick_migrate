@@ -49,6 +49,8 @@ Copy and add the following
 	- Add column
 	- Reorder column [if needed]
 example:
+
+``` PHP
     private function manageUsersTable()
     {
         helper(['quickMigrate']);
@@ -97,3 +99,4 @@ example:
 
         quickMigrate('users', $expectedSchema);
     }
+```
