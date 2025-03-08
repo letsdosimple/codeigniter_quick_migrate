@@ -1,9 +1,38 @@
 <?php
 
-function quickMigrate($tableName, $expectedSchema)
+function quickMigrate($tableName, $expectedSchema, $changeCount)
 {
     $db = \Config\Database::connect();
     $forge = \Config\Database::forge();
+
+    // Ensure migration log table exists
+    $migrationLogTable = 'migrations_log';
+
+    if (!$db->tableExists($migrationLogTable)) {
+        $forge->addField([
+            'id'          => ['type' => 'INT', 'auto_increment' => true],
+            'table_name'  => ['type' => 'VARCHAR', 'constraint' => 255],
+            'version'     => ['type' => 'TEXT'],
+            'migrated_at' => ['type' => 'DATETIME', 'default' => 'CURRENT_TIMESTAMP'],
+        ]);
+        $forge->addPrimaryKey('id');
+        $forge->createTable($migrationLogTable, true);
+    }
+
+    $currentVersion = md5(json_encode($expectedSchema) . $changeCount); // Unique hash for schema version
+
+    // Check if migration has already been run for this table
+    $existingMigration = $db->table($migrationLogTable)
+        ->where('table_name', $tableName)
+        ->where('version', $currentVersion)
+        ->orderBy('id', 'DESC')
+        ->get()
+        ->getRow();
+
+    if ($existingMigration) {
+        echo "No changes detected for table: $tableName. Skipping migration.\n";
+        return;
+    }
 
     // Check if table exists
     if (!$db->tableExists($tableName)) {
@@ -34,8 +63,6 @@ function quickMigrate($tableName, $expectedSchema)
                             ON DELETE {$keyDetails['on_delete']} ON UPDATE {$keyDetails['on_update']}");
             }
         }
-
-        return;
     } else {
         // If table exists, check for column changes and updates
 
@@ -49,17 +76,17 @@ function quickMigrate($tableName, $expectedSchema)
             ];
         }
 
-        $expectedColumnNames = array_filter(array_keys($expectedSchema), function($key) {
+        $expectedColumnNames = array_filter(array_keys($expectedSchema), function ($key) {
             return !in_array($key, ['primary_key', 'unique_keys', 'foreign_keys']);
         });
         $existingColumnNames = array_keys($existingColumns);
-        
+
         // echo "<pre>";
         // print_r($expectedSchema);
         // print_r($existingColumns);
         // print_r($expectedColumnNames);
         // print_r($existingColumnNames);
-       
+
 
         // Step 1: Rename Columns
         if (count($existingColumnNames) === count($expectedColumnNames)) {
@@ -72,26 +99,22 @@ function quickMigrate($tableName, $expectedSchema)
                         $expectedColumnNames[$existingNameKey] => $expectedSchema[$expectedColumnNames[$existingNameKey]]
                     ];
                     $forge->modifyColumn($tableName, $fields);
-
-
-                }else{
-                    if(
-                        $existingColumns[$existingName]['type'] !== $expectedSchema[$existingName]['type'] 
+                } else {
+                    if (
+                        $existingColumns[$existingName]['type'] !== $expectedSchema[$existingName]['type']
                         || (
                             isset($existingColumns[$existingName]['constraint'])
                             && isset($expectedSchema[$existingName]['constraint'])
                             &&
                             $existingColumns[$existingName]['constraint'] !== $expectedSchema[$existingName]['constraint']
-                        ) 
-                    ){
+                        )
+                    ) {
                         $fields = [
                             $existingName => $expectedSchema[$existingName]
                         ];
                         $forge->modifyColumn($tableName, $fields);
                     }
                 }
-
-
             }
         }
 
@@ -148,35 +171,35 @@ function quickMigrate($tableName, $expectedSchema)
         // Check if the current order matches the expected order
         foreach ($expectedColumnNames as $index => $colName) {
             if ($currentOrder[$index] !== $colName) {
-            $isCorrectOrder = false;
-            break;
+                $isCorrectOrder = false;
+                break;
             }
         }
 
         // If the order is not correct, reorder the columns
         if (!$isCorrectOrder) {
             foreach ($expectedColumnNames as $colName) {
-            if (isset($existingColumns[$colName])) {
-                echo "Reordering column: $colName after $previousColumn\n";
-                $attributes = $expectedSchema[$colName];
+                if (isset($existingColumns[$colName])) {
+                    echo "Reordering column: $colName after $previousColumn\n";
+                    $attributes = $expectedSchema[$colName];
 
-                try {
-                $sql = "ALTER TABLE `$tableName` MODIFY COLUMN `$colName` {$attributes['type']}";
-                if (!empty($attributes['constraint'])) {
-                    $sql .= "({$attributes['constraint']})";
-                }
-                if ($previousColumn) {
-                    $sql .= " AFTER `$previousColumn`";
-                } else {
-                    $sql .= " FIRST";
-                }
+                    try {
+                        $sql = "ALTER TABLE `$tableName` MODIFY COLUMN `$colName` {$attributes['type']}";
+                        if (!empty($attributes['constraint'])) {
+                            $sql .= "({$attributes['constraint']})";
+                        }
+                        if ($previousColumn) {
+                            $sql .= " AFTER `$previousColumn`";
+                        } else {
+                            $sql .= " FIRST";
+                        }
 
-                $db->query($sql);
-                } catch (\Exception $e) {
-                echo "Error reordering column: " . $e->getMessage() . "\n";
+                        $db->query($sql);
+                    } catch (\Exception $e) {
+                        echo "Error reordering column: " . $e->getMessage() . "\n";
+                    }
                 }
-            }
-            $previousColumn = $colName;
+                $previousColumn = $colName;
             }
         }
     }
@@ -270,4 +293,13 @@ function quickMigrate($tableName, $expectedSchema)
             }
         }
     }
+
+    // --- Update Migration Log ---
+    $db->table($migrationLogTable)->insert([
+        'table_name' => $tableName,
+        'version'    => $currentVersion,
+        'migrated_at' => date('Y-m-d H:i:s'),
+    ]);
+    echo "Migration completed for table: $tableName\n";
+
 }

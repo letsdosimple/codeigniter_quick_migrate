@@ -45,6 +45,7 @@ class QuickMigrate extends BaseController
     {
         helper(['quick_migrate']);
 
+        //initial schema
         $expectedSchema = [
             'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
             'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
@@ -63,8 +64,51 @@ class QuickMigrate extends BaseController
                 'unique_test4' => ['test4'],
             ],
         ];
+        quickMigrate('users', $expectedSchema, 1);
 
-        quickMigrate('users', $expectedSchema);
+        //add one column
+        $expectedSchema = [
+            'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+            'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'email' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test33' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test44' => ['type' => 'VARCHAR', 'constraint' => 101],
+            'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'created_at' => ['type' => 'DATETIME', 'null' => true],
+            'test6' => ['type' => 'VARCHAR', 'constraint' => 255],
+
+            // Primary Key
+            'primary_key' => 'id',
+
+            //Unique keys
+            'unique_keys' => [
+                'unique_test4' => ['test4'],
+            ],
+        ];
+        quickMigrate('users', $expectedSchema, 2);
+
+        //reorder columns
+        $expectedSchema = [
+            'id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+            'full_name' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'email' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test33' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test3' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test44' => ['type' => 'VARCHAR', 'constraint' => 101],
+            'test5' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'test6' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'created_at' => ['type' => 'DATETIME', 'null' => true],
+
+            // Primary Key
+            'primary_key' => 'id',
+
+            //Unique keys
+            'unique_keys' => [
+                'unique_test4' => ['test4'],
+            ],
+        ];
+        quickMigrate('users', $expectedSchema, 3);
         
     }
 
@@ -95,6 +139,6 @@ class QuickMigrate extends BaseController
             ],
         ];
 
-        quickMigrate('user_otp', $expectedSchema);
+        quickMigrate('user_otp', $expectedSchema, 1);
     }
 }
